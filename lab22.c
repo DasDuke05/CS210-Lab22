@@ -43,24 +43,46 @@ int main(){
     // ----------------------------------------------------------------------------------
     // Step 1:  Read the the contents of games.csv into the parallel arrays above
     // ----------------------------------------------------------------------------------
-    
+    FILE* inFile = NULL;
+    inFile = fopen("games.csv", "r");
+    if (inFile == NULL) {
+        return 0;
+    }
+    fscanf(inFile, "%*[^\n]\n");
+    for (int i = 0; i < NUM_GAMES; ++i) {
+        fscanf(inFile, "%d,%d,%d,%lf,%lf,%lf,%d,%d,%d,%lf,%lf,%lf,%d,%d,%d\n",&homeIDs[i],&awayIDs[i],&homeScores[i],&homeFgPcts[i],&homeFtPcts[i],&homeFg3Pcts[i],&homeAssists[i],&homeRebounds[i],&awayScores[i],&awayFgPcts[i],&awayFtPcts[i],&awayFg3Pcts[i],&awayAssists[i],&awayRebounds[i],&homeTeamWins[i]);
+    }
+
+    fclose(inFile);
 
     // ----------------------------------------------------------------------------------
     // Step 2:  Call the 5 functions and gather their data
     // ----------------------------------------------------------------------------------
+    double ptDiff1 = pointDifferentialPerGameOneTeam(team1,homeIDs,awayIDs,homeScores,awayScores,NUM_GAMES);
+    double ptDiff2 = pointDifferentialPerGameOneTeam(team2,homeIDs,awayIDs,homeScores,awayScores,NUM_GAMES);
     // Call pointDifferentialPerGameOneTeam 2x – once for the home team and once for the away time
 
     // Subtract Team 2 from Team 1 to get the pointDifferentialStat
+    double ptDiffStat = ptDiff2 - ptDiff1;
 
     // Call shootingEffectivenessOneTeam 2x – once for the home team and once for the away time
+    double shtEff1 = shootingEffectivenessOneTeam(team1,homeIDs,awayIDs,homeFgPcts, awayFgPcts, homeFg3Pcts, awayFg3Pcts, homeFtPcts, awayFtPcts,NUM_GAMES);
+    double shtEff2 = shootingEffectivenessOneTeam(team2,homeIDs,awayIDs,homeFgPcts,awayFgPcts,homeFg3Pcts,awayFg3Pcts,homeFtPcts,awayFtPcts,NUM_GAMES);
     
     // Subtract Team 2 from Team 1 to get the shootingDifferentialStat
+    double shtEffStat = shtEff2 - shtEff1;
 
     // Call reboundsPerGameComparison once to get the reboundingStat
+    double reboundStat = reboundsPerGameComparison(team1,team2,homeIDs,awayIDs,homeRebounds,awayRebounds, NUM_GAMES);
 
     // Call assistsPerGameComparison once to get the assistStat
 
+    double assistStat = assistsPerGameComparison(team1,team2,homeIDs,awayIDs,homeAssists,awayAssists,NUM_GAMES);
+
+
     // Call headToHeadWL once to get the headToHeadStat
+
+    int HtHStat = headToHeadWL(team1,team2,homeIDs,awayIDs,homeTeamWins,NUM_GAMES);
 
 
     // ----------------------------------------------------------------------------------
@@ -68,6 +90,18 @@ int main(){
     // (pointDifferentialStat * 0.6) + headToHeadStat + (shootingDifferentialStat * 120)
     //                               + reboundingStat + (assistStat * 0.75)
     // ----------------------------------------------------------------------------------
+
+    double winner = (ptDiffStat * 0.6) + HtHStat + (shtEffStat * 120) + reboundStat + (assistStat * 0.75);
+    int teamWin = 0;
+
+    if (winner > 0) {
+        teamWin = 1;
+    }
+    if (winner < 0) {
+        teamWin = 2;
+    }
+
+    printf("The final output is %.2lf, which means team %d is predicted to win the game",winner, teamWin);
 
     return 0;
 }
